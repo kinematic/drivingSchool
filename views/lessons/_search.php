@@ -30,7 +30,7 @@ use app\models\Instructors;
 		                'autoclose' => true,
 		                'format' => 'yyyy-mm-dd'
 		            ]
-		    ])->label(false); 
+		    ])->hint('начало')->label(false); 
 		    ?>
 
 			<?= $form->field($model, 'dateEnd')->widget(
@@ -39,24 +39,24 @@ use app\models\Instructors;
 		                'autoclose' => true,
 		                'format' => 'yyyy-mm-dd'
 		            ]
-		    ])->label(false); 
+		    ])->hint('конец')->label(false); 
 		    ?>
 
 		</div>
 		<div class="col-md-2">
-			<?= $form->field($model, 'typeid')->dropDownList(array('1' => 'занятие', '2' => 'тест'), ['prompt' => ''])->label(false) ?>
+			<?= $form->field($model, 'typeid')->dropDownList(array('1' => 'занятие', '2' => 'тест'), ['prompt' => ''])->hint('тип')->label(false) ?>
 			<?= $form->field($model, 'vehicleid')->dropDownList(ArrayHelper::map(Vehicles::find()
 				->orderBy('name')
-				->all(), 'id', 'name'), ['prompt'=>''])->label(false); ?>
+				->all(), 'id', 'name'), ['prompt'=>''])->hint('машина')->label(false); ?>
 		</div>
 		<div class="col-md-3">
 			<?= $form->field($model, 'instructorid')->dropDownList(ArrayHelper::map(Instructors::find()
 				->orderBy('name')
-				->all(), 'id', 'name'), ['prompt'=>''])->label(false);?>
+				->all(), 'id', 'name'), ['prompt'=>''])->hint('инструктор')->label(false);?>
 
 		    <?= $form->field($model, 'customerid')->dropDownList(ArrayHelper::map(Customers::find()
 				->orderBy('name')
-				->all(), 'id', 'name'), ['prompt'=>''])->label(false);?>
+				->all(), 'id', 'name'), ['prompt'=>''])->label(false)->hint('клиент');?>
 		</div>
 		<div class="col-md-3">
 			<div class="form-group">

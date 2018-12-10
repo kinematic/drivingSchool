@@ -56,20 +56,22 @@ $this->params['breadcrumbs'][] = $this->title;
     ]);
 	$totalLessonsQuantity = 0;
 	$totalPayments = 0;
+	$totalPrices = 0;
 	$tmp = $dataProvider->getModels();
 	foreach ($tmp as $item) {
         $totalLessonsQuantity += $item['lessonsquantity'];
-		$totalPayments += $item['cost'] * $item['quantity'];
+		$totalPayments += $item->cost;
+		$totalPrices += $item->service->price * $item->quantity;
     };
 	$paidFee = $model->paidfee;
 
-
+	if($totalPrices > $totalPayments) $footerOptions = ['class' => 'danger'];
+	else $footerOptions = [];
 	
     $balanceMoney = 
         Payments::find()
         ->innerJoin('services s', 's.id = payments.serviceid')
         ->where(['customerid' => $model->id])->sum('price * quantity');
-	$totalLessons = 0;
     
     echo GridView::widget([
         'dataProvider' => $dataProvider,
@@ -83,24 +85,31 @@ $this->params['breadcrumbs'][] = $this->title;
         'emptyText' => '',
         'layout' => "{items}",
 		'rowOptions' => function ($model, $key, $index, $grid) use (&$balanceMoney)  {
-	        if($balanceMoney < 0) return ['class' => 'warning'];
-// 			else return ['class' => 'info'];
+			if($model->error) return ['class' => 'warning'];
 	     },
         'columns' => [
             'date',
             'service.name',
-			'service.price',
-			'cost',
+			[
+				'attribute' => 'service.price',
+				'footer' => $totalPrices,
+			],
 			'quantity',
-            [
-                'attribute' => 'долг, $',
+			[			
+				'attribute' => 'cost',
 				'footer' => $totalPayments,
-                'value' => function($data) use (&$balanceMoney) {
-                    $balanceMoney = $balanceMoney - $data->cost * $data->quantity;
-// 					$balanceMoney =  $data->cost - $balanceMoney;
-                    return $balanceMoney;
-                }
-            ],
+				'format' => 'raw',
+				'value' => function($data) {
+					if($data->error)  
+						return Html::tag('span', $data->cost, [
+						    'title'=> $data->error,
+						    'data-toggle'=>'tooltip',
+						    'style' => 'text-decoration: underline; cursor:pointer;'
+						]);
+					else return $data->cost;
+				},
+				'footerOptions' => $footerOptions,
+			],
 			[
 				'attribute' => 'lessonsquantity',
 				'footer' => $totalLessonsQuantity,
@@ -126,6 +135,7 @@ $this->params['breadcrumbs'][] = $this->title;
 				'delete' => function ($url, $model) {
 					return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
 						'title' => Yii::t('app', 'удалить'),
+						'data-method' => 'post',
 					]);
 				}
 
@@ -169,7 +179,10 @@ $this->params['breadcrumbs'][] = $this->title;
 		foreach ($tmp as $item) {
 	        $totalLessonsDuration += $item['duration'];
 	    };
-
+$lessonsBalance = 0;
+$paymentid = 0;
+	    
+	    
     echo GridView::widget([
         'dataProvider' => $dataProvider,
 		'caption' => '<h3 style="display:inline">Занятия</h3>' . ' ' . 
@@ -183,28 +196,70 @@ $this->params['breadcrumbs'][] = $this->title;
         'layout' => "{items}",
 		'rowOptions' => function ($model, $key, $index, $grid) use (&$totalLessonsQuantity, $paidFee)  {
 	        if($totalLessonsQuantity < 0 or ($model->typeid == 2 and !$paidFee)) return ['class' => 'danger'];
-			Yii::warning($totalLessonsQuantity);
+// 			Yii::warning($totalLessonsQuantity);
 // 			if() return ['class' => 'danger'];
 // 			else return ['class' => 'blue-color'];
 	     },
+        'beforeRow' => function ($model, $key, $index, $grid) use (&$paymentid)
+        {
+            if($model->paymentid != $paymentid) {
+//                 $currentCompanyID = $model->man->companyid;
+                return '<tr><td colspan=6><b>' . $model->payment->date . ' - ' . $model->payment->service->name . '</b></td></tr>';
+            }
+        },
         'columns' => [
-            'datetime:date:дата',
-            'instructor.name',
-			[
-				'attribute' => 'duration',
-				'footer' => $totalLessonsDuration,
-			],
-			'type',
-// 			'balance',
+			'datetime:date:дата',
+            'payment.service.name',
             [
-                'attribute' => 'остаток, ч',
-                'value' => function($data) use (&$totalLessonsQuantity) {
-// Yii::warning($totalLessonsQuantity);
-                    $totalLessonsQuantity = $totalLessonsQuantity - $data->duration;
-                    return $totalLessonsQuantity;
+                'attribute' => 'баланс',
+                'value' => function($data) use (&$lessonsBalance, &$paymentid) {
+                    if($paymentid != $data->paymentid) {
+                        $paymentid = $data->paymentid;
+                        $lessonsBalance = $data->payment->lessonsquantity - $data->duration;
+                        return $data->payment->lessonsquantity;
+                        
+                    } else {
+                        $tmp = $lessonsBalance;
+                        $lessonsBalance -= $data->duration;
+                        return $tmp;
+                    
+                    }
+
                 },
-				'visible' => true,
             ],
+            [
+            'attribute' => 'duration',
+            'footer' => $totalLessonsDuration,
+            ],
+//             [
+//                 'attribute' => 'остаток, ч',
+//                 'value' => function($data) use (&$totalLessonsQuantity) {
+// 					$totalLessonsQuantity = $totalLessonsQuantity - $data->duration;
+//                     return $totalLessonsQuantity;
+//                 },
+// 				'visible' => true,
+//             ],
+			[
+				'attribute' => 'type',
+				'format' => 'raw',
+				
+				'value' => function($data) use (&$totalLessonsQuantity, $paidFee) {
+					if($totalLessonsQuantity < 0) 
+						return Html::tag('span', $data->type, [
+						    'title'=>'не оплачено занятие',
+						    'data-toggle'=>'tooltip',
+						    'style' => 'text-decoration: underline; cursor:pointer;'
+						]);
+					else if($data->typeid == 2 and !$paidFee)
+						return Html::tag('span', $data->type, [
+						    'title'=>'не оплачен сбор',
+						    'data-toggle'=>'tooltip',
+						    'style' => 'text-decoration: underline; cursor:pointer;'
+						]);
+					else return $data->type;
+				}
+            ],
+// 			'instructor.name',
 	        [
 				'class' => 'yii\grid\ActionColumn',
 // 				'header' => 'Действия',
@@ -225,6 +280,7 @@ $this->params['breadcrumbs'][] = $this->title;
 				'delete' => function ($url, $model) {
 					return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
 						'title' => Yii::t('app', 'удалить'),
+						'data-method' => 'post',
 					]);
 				}
 
@@ -249,7 +305,9 @@ $this->params['breadcrumbs'][] = $this->title;
 		],
 		
 
-    ]) ?>
+    ]) ;
+
+?>
 		</div>
     </div>
 </div>

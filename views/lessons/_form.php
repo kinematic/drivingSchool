@@ -7,6 +7,7 @@ use dosamigos\datetimepicker\DateTimePicker;
 use app\models\Customers;
 use app\models\Vehicles;
 use app\models\Instructors;
+use app\models\Payments;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Lessons */
@@ -16,6 +17,18 @@ use app\models\Instructors;
 <div class="lessons-form">
 
     <?php $form = ActiveForm::begin(); ?>
+	
+	<div class="row">
+	    <div class="col-md-6">
+			<?= $form->field($model, 'paymentid')->dropDownList(ArrayHelper::map(Payments::find()
+				->where(['customerid' => $model->customerid])
+				->orderBy('date')
+				->all(), 'id', function($model) {
+// 					        return $model->date . ' ' . $model->service->name . ': ' . $model->lessonscount . ' из ' . $model->service->duration;
+					        return $model->date . ' ' . $model->service->name . ': ' . $model->lessonscount . ' из ' . $model->lessonsquantity;
+					    }), ['prompt'=>'']); ?>
+		</div>
+	</div>
 	<div class="row">
 	    <div class="col-md-3">
             <?= $form->field($model, 'datetime')->widget(DateTimePicker::className(), [
@@ -53,9 +66,6 @@ use app\models\Instructors;
 				'10' => 10
 			]) ?>
         </div>
-	    <div class="col-md-3">
-            <?= $form->field($model, 'typeid')->dropDownList(['1' => 'занятие', '2' => 'тест']) ?>
-        </div>
 	</div>
     <div class="row">
 		<div class="col-md-3">
@@ -76,11 +86,6 @@ use app\models\Instructors;
 
             
         </div>
-	    <div class="col-md-3">
-			<?= $form->field($model, 'vehicleid')->dropDownList(ArrayHelper::map(Vehicles::find()
-				->orderBy('name')
-				->all(), 'id', 'name'), ['prompt'=>'']); ?>
-		</div>
 	</div>
 
 	<div class="row">
@@ -101,3 +106,8 @@ use app\models\Instructors;
     <?php ActiveForm::end(); ?>
 
 </div>
+<?php
+// Yii::warning($model->restoflessons);
+// Yii::warning($model->payment->lessonscount);
+
+?>

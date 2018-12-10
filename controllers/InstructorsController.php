@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Instructors;
 use app\models\InstructorsSearch;
+use app\models\LessonsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -52,11 +53,12 @@ class InstructorsController extends Controller
      */
     public function actionView($id)
     {
-		$searchModel = new InstructorsLessonsSearch();
+		$searchModel = new LessonsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('view', [
             'model' => $this->findModel($id),
+			'dataProvider' => $dataProvider,
         ]);
     }
 

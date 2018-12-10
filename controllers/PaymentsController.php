@@ -72,6 +72,7 @@ class PaymentsController extends Controller
         } else {
 			$model->load(Yii::$app->request->get());
 			$model->quantity = 1;
+			$model->cost = 0;
 	        return $this->render('create', [
 	            'model' => $model,
 	        ]);
@@ -108,9 +109,12 @@ class PaymentsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model = $this->findModel($id);
+//         $this->findModel($id)->delete();
+        $customerid = $model->customerid;
+        $model->delete();
+//         return $this->redirect(['index']);
+        return $this->redirect(['customers/view', 'id' => $customerid]);
     }
 
     /**

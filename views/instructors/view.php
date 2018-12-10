@@ -46,7 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'method' => 'get',
 //         'type' => ActiveForm::TYPE_INLINE,
     ]); ?>
-			<?= $form->field($model, 'dateBegin')->widget(
+			<?// = $form->field($model, 'dateBegin')->widget(
 		        DatePicker::className(), [
 		            'clientOptions' => [
 		                'autoclose' => true,
@@ -54,7 +54,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		            ]
 		    ])->label(false); 
 		    ?>
-			<?= $form->field($model, 'dateEnd')->widget(
+			<?//= $form->field($model, 'dateEnd')->widget(
 		        DatePicker::className(), [
 		            'clientOptions' => [
 		                'autoclose' => true,
@@ -62,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		            ]
 		    ])->label(false); 
 		    ?>
-			<?= $form->field($model, 'typeid')->dropDownList(array('1' => 'приход', '2' => 'расход'), ['prompt' => ''])->label(false) ?>
+			<?//= $form->field($model, 'typeid')->dropDownList(array('1' => 'приход', '2' => 'расход'), ['prompt' => ''])->label(false) ?>
 		    <div class="form-group">
 		        <?= Html::submitButton('Искать', ['class' => 'btn btn-primary']) ?>
 		        <?= Html::resetButton('Очистить', ['class' => 'btn btn-default']) ?>
@@ -105,6 +105,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             'datetime:date:дата',
             'customer.name',
+	'vehicle.name',
 			[
 				'attribute' => 'duration',
 				'footer' => $totalLessonsDuration,

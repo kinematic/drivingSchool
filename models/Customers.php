@@ -59,12 +59,12 @@ class Customers extends \yii\db\ActiveRecord
     
     public function getPayments()
     {
-        return $this->hasMany(Payments::className(), ['customerid' => 'id']);
+        return $this->hasMany(Payments::className(), ['customerid' => 'id'])->orderBy('date');
     }
     
     public function getLessons()
     {
-        return $this->hasMany(Lessons::className(), ['customerid' => 'id']);
+        return $this->hasMany(Lessons::className(), ['customerid' => 'id'])->orderBy('datetime');
     }
     
     public function getPaidfee()

@@ -24,36 +24,42 @@ use app\models\Services;
 					клиент ' . Html::a('<span class="glyphicon glyphicon-plus"></span>', 
 					['customers/create', 'Customers[id]' => $model->id], 
 					['title' => Yii::t('yii', 'добавить')])); ?>
+			<div class="row">
+				<div class="col-md-10">
+				    <?= $form->field($model, 'serviceid')->dropDownList(ArrayHelper::map(Services::find()
+						->orderBy('name')
+						->all(), 
+						'id',     
+						function($model) {
+					        return $model->name . ', $' . $model->price;
+					    }), ['prompt'=>'']); ?>
+				</div>
+				<div class="col-md-2">
+					<?= $form->field($model, 'quantity')->textInput(['maxlength' => true]) ?>
+				
+				</div>
+			</div>
+			<div class="row">
+			    <div class="col-md-8">
+					<?= $form->field($model, 'date')->widget(
+			            DatePicker::className(), [
+			                'clientOptions' => [
+			                    'autoclose' => true,
+			                    'format' => 'yyyy-mm-dd'
+			                ]
+			        ]);  ?>
+				</div>
+				<div class="col-md-4">
+					<?= $form->field($model, 'cost')->textInput(['maxlength' => true]) ?>
+				</div>
+			</div>
 
-		    <?= $form->field($model, 'serviceid')->dropDownList(ArrayHelper::map(Services::find()
-				->orderBy('name')
-				->all(), 
-				'id',     
-				function($model) {
-			        return $model->name . ', $' . $model->price;
-			    }), ['prompt'=>'']); ?>
 		</div>
 		<div class="col-md-6">
 		    <?= $form->field($model, 'comment')->textarea(['rows' => 6]) ?>
 		</div>
 	</div>
-	<div class="row">
-	    <div class="col-md-3">
-			<?= $form->field($model, 'date')->widget(
-	            DatePicker::className(), [
-	                'clientOptions' => [
-	                    'autoclose' => true,
-	                    'format' => 'yyyy-mm-dd'
-	                ]
-	        ]);  ?>
-		</div>
-		<div class="col-md-2">
-			<?= $form->field($model, 'cost')->textInput(['maxlength' => true]) ?>
-		</div>
-		<div class="col-md-1">
-			<?= $form->field($model, 'quantity')->textInput(['maxlength' => true]) ?>
-		</div>
-	</div>
+
     <div class="form-group">
         <?= Html::submitButton('Сохранить', ['class' => 'btn btn-success']) ?>
     </div>

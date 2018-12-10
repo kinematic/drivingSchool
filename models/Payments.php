@@ -1,9 +1,6 @@
 <?php
-
 namespace app\models;
-
 use Yii;
-
 /**
  * This is the model class for table "payments".
  *
@@ -17,6 +14,7 @@ use Yii;
  */
 class Payments extends \yii\db\ActiveRecord
 {
+
     /**
      * {@inheritdoc}
      */
@@ -68,6 +66,11 @@ class Payments extends \yii\db\ActiveRecord
 		return $this->hasOne(Services::className(), ['id' => 'serviceid']);
 	}
 
+	public function getLessonscount()
+	{
+		return $this->hasMany(Lessons::className(), ['paymentid' => 'id'])->sum('duration');;
+	}
+
 	public function getLessonsquantity(){
 		if($this->quantity == 1) {
 			if($this->service->price == $this->cost) {
@@ -78,5 +81,12 @@ class Payments extends \yii\db\ActiveRecord
 			}
 		} else $lessonsQuantity = $this->service->duration * $this->quantity;
         return $lessonsQuantity;
+	}
+
+	public function getError()
+	{
+		$diff = $this->service->price * $this->quantity - $this->cost;
+		if($diff > 0) return 'долг $' . $diff;
+		if($diff < 0) return 'переплата $' . abs($diff);
 	}
 }

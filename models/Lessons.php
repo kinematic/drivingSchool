@@ -33,13 +33,12 @@ class Lessons extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['datetime', 'instructorid', 'customerid', 'vehicleid', 'typeid'], 'required'],
+            [['datetime', 'paymentid', 'instructorid', 'customerid'], 'required'],
             [['datetime'], 'safe'],
             [['duration'], 'number'],
-            [['instructorid', 'customerid', 'vehicleid', 'typeid'], 'integer'],
+            [['instructorid', 'paymentid', 'customerid', 'vehicleid', 'typeid'], 'integer'],
             [['comment'], 'string'],
 			[['comment'], 'default', 'value' => null],
-			[['typeid'], 'default', 'value' => 1],
         ];
     }
 
@@ -60,12 +59,18 @@ class Lessons extends \yii\db\ActiveRecord
 //             'balance' => 'баланс, ч',
 			'typeid' => 'тип занятия',
 			'type' => 'тип',
+			'paymentid' => 'платеж',
         ];
     }
 
 	public function getCustomer()
 	{
 		return $this->hasOne(Customers::className(), ['id' => 'customerid']);
+	}
+
+	public function getPayment()
+	{
+		return $this->hasOne(Payments::className(), ['id' => 'paymentid']);
 	}
 
 	public function getInstructor()
@@ -78,12 +83,11 @@ class Lessons extends \yii\db\ActiveRecord
 		return $this->hasOne(Vehicles::className(), ['id' => 'vehicleid']);
 	}
 		
-// 	public function getBalance()
-// 	{
-// //         return $this->service->duration - $this->duration;
-//         return null;
-//         
-// 	}
+	public function getRestoflessons()
+	{
+        return $this->payment->service->duration;
+        
+	}
 
 	public function getType()
 	{
