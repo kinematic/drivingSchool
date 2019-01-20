@@ -72,7 +72,13 @@ class LessonsController extends Controller
         } else {
 			$model->load(Yii::$app->request->get());
 			$model->typeid = 1;
-	        return $this->render('create', [
+			$tmp = Lessons::find()->where(['customerid' => $model->customerid])->orderBy('datetime DESC')->one();
+			if(isset($tmp)) {
+				$model->instructorid = $tmp->instructorid;
+				$model->datetime = $tmp->datetime;
+			}
+			
+			return $this->render('create', [
 	            'model' => $model,
 	        ]);
 		}
@@ -108,9 +114,10 @@ class LessonsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+		$model = $this->findModel($id);
+		$customerid = $model->customerid;
+		$model->delete();
+		return $this->redirect(['customers/view', 'id' => $customerid]);
     }
 
     /**

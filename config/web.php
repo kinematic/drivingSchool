@@ -66,7 +66,7 @@ if (YII_ENV_DEV) {
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
-        'traceLine' => '<a href="kate://open?url={file}&line={line}">{file}:{line}</a>',
+        'traceLine' => '<a href="file://open?url={file}&line={line}">{file}:{line}</a>',
         'allowedIPs' => ['192.168.2.*', '10.10.0.*'],
         'panels' => [
             'db' => [

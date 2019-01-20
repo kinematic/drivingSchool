@@ -22,11 +22,11 @@ use app\models\Payments;
 	    <div class="col-md-6">
 			<?= $form->field($model, 'paymentid')->dropDownList(ArrayHelper::map(Payments::find()
 				->where(['customerid' => $model->customerid])
-				->orderBy('date')
+				->andWhere('serviceid <> 24')
+				->orderBy('date DESC')
 				->all(), 'id', function($model) {
-// 					        return $model->date . ' ' . $model->service->name . ': ' . $model->lessonscount . ' из ' . $model->service->duration;
 					        return $model->date . ' ' . $model->service->name . ': ' . $model->lessonscount . ' из ' . $model->lessonsquantity;
-					    }), ['prompt'=>'']); ?>
+					    })); ?>
 		</div>
 	</div>
 	<div class="row">
@@ -52,7 +52,7 @@ use app\models\Payments;
             ]);
             ?>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-1">
             <?= $form->field($model, 'duration')->dropDownList([
 				'1' => 1, 
 				'2' => 2, 
@@ -64,7 +64,10 @@ use app\models\Payments;
 				'8' => 8,
 				'9' => 9,
 				'10' => 10
-			]) ?>
+			])->label('часов') ?>
+        </div>
+		<div class="col-md-2">
+            <?= $form->field($model, 'typeid')->dropDownList(['1' => 'занятие', '2' => 'тест']) ?>
         </div>
 	</div>
     <div class="row">

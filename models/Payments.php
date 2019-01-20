@@ -68,11 +68,15 @@ class Payments extends \yii\db\ActiveRecord
 
 	public function getLessonscount()
 	{
-		return $this->hasMany(Lessons::className(), ['paymentid' => 'id'])->sum('duration');;
+		$value = $this->hasMany(Lessons::className(), ['paymentid' => 'id'])->sum('duration');
+		if(isset($value)) return $value;
+		else return 0;
 	}
 
 	public function getLessonsquantity(){
-		if($this->quantity == 1) {
+// 		print_r($this);
+
+		if($this->quantity == 1 or $this->quantity == 0) {
 			if($this->service->price == $this->cost) {
 				$lessonsQuantity = $this->service->duration;
 			} else {
@@ -80,6 +84,8 @@ class Payments extends \yii\db\ActiveRecord
 				$lessonsQuantity = ROUND($this->cost / $oneLessonPrice);
 			}
 		} else $lessonsQuantity = $this->service->duration * $this->quantity;
+// print $lessonsQuantity;
+// die();
         return $lessonsQuantity;
 	}
 

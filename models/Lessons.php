@@ -50,7 +50,7 @@ class Lessons extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'datetime' => 'дата и время',
-            'duration' => 'длительность, ч',
+            'duration' => 'часы, ч',
             'instructor.name' => 'инструктор',
             'customer.name' => 'клиент',
             'vehicleid' => 'автомобиль',
@@ -82,16 +82,17 @@ class Lessons extends \yii\db\ActiveRecord
 	{
 		return $this->hasOne(Vehicles::className(), ['id' => 'vehicleid']);
 	}
-		
-	public function getRestoflessons()
-	{
-        return $this->payment->service->duration;
-        
-	}
 
 	public function getType()
 	{
 		if($this->typeid == 1) return 'занятие';
 		if($this->typeid == 2) return 'тест';
+	}
+
+	public function getError()
+	{
+		$diff = $this->payment->service->duration * $this->payment->quantity - $this->duration;
+		if($diff < 0) return 'не оплачено';
+		else return null;
 	}
 }

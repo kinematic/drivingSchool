@@ -16,7 +16,8 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="customers-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
-
+	<div class="row">
+	    <div class="col-md-4">
     <p>
         <?= Html::a('Редактировать', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Удалить', ['delete', 'id' => $model->id], [
@@ -27,8 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
         ]) ?>
     </p>
-	<div class="row">
-	    <div class="col-md-4">
+
 		    <?= DetailView::widget([
 		        'model' => $model,
 		        'attributes' => [
@@ -47,12 +47,6 @@ $this->params['breadcrumbs'][] = $this->title;
 	$dataProvider = new ArrayDataProvider([
         'allModels' => $model->payments,
         'key' => 'id',
-//         'sort' => [
-//             'attributes' => ['date'],
-//             'defaultOrder' => [
-//                 'date' => SORT_DESC,
-//             ],
-//         ],
     ]);
 	$totalLessonsQuantity = 0;
 	$totalPayments = 0;
@@ -114,30 +108,35 @@ $this->params['breadcrumbs'][] = $this->title;
 				'attribute' => 'lessonsquantity',
 				'footer' => $totalLessonsQuantity,
 			],
-// 			'lessonsquantity',
 	        [
 				'class' => 'yii\grid\ActionColumn',
-// 				'header' => 'Действия',
+				'template' => '{view} {update} {delete} {comment}',
 				'headerOptions' => ['style' => 'color:#337ab7'],
-				'template' => '{view} {update} {delete}',
 				'buttons' => [
-				'view' => function ($url, $model) {
-					return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', $url, [
-						'title' => Yii::t('app', 'посмотреть'),
-					]);
-				},
+                    'view' => function ($url, $model) {
+                        return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', $url, [
+                            'title' => Yii::t('app', 'посмотреть'),
+                        ]);
+                    },
 
-				'update' => function ($url, $model) {
-					return Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
-						'title' => Yii::t('app', 'редактировать'),
-					]);
-				},
-				'delete' => function ($url, $model) {
-					return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
-						'title' => Yii::t('app', 'удалить'),
-						'data-method' => 'post',
-					]);
-				}
+                    'update' => function ($url, $model) {
+                        return Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                            'title' => Yii::t('app', 'редактировать'),
+                        ]);
+                    },
+                    'delete' => function ($url, $model) {
+                        return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                            'title' => Yii::t('app', 'удалить'),
+                            'data-method' => 'post',
+                        ]);
+                    },
+                    'comment' => function ($url, $model) {
+//                         Yii::warning('коммент = ' . $model->comment);
+                        return Html::a('<span class="glyphicon glyphicon-comment"></span>', $url, [
+                            'title' => Yii::t('app', $model->comment),
+                            'hidden' => !isset($model->comment),
+                        ]);
+                    }
 
 				],
 				'urlCreator' => function ($action, $model, $key, $index) {
@@ -155,6 +154,10 @@ $this->params['breadcrumbs'][] = $this->title;
 						$url ='index.php?r=payments/delete&id=' . $model['id'];
 						return $url;
 					}
+                    if ($action === 'comment') {
+						$url ='index.php?r=payments/view&id=' . $model['id'];
+						return $url;
+					}
 
 				}
 			],
@@ -167,22 +170,19 @@ $this->params['breadcrumbs'][] = $this->title;
 	$dataProvider = new ArrayDataProvider([
         'allModels' => $model->lessons,
         'key' => 'id',
-//         'sort' => [
-//             'attributes' => ['date'],
-//             'defaultOrder' => [
-//                 'date' => SORT_DESC,
-//             ],
-//         ],
     ]);
-		$totalLessonsDuration = 0;
-		$tmp = $dataProvider->getModels();
-		foreach ($tmp as $item) {
-	        $totalLessonsDuration += $item['duration'];
-	    };
-$lessonsBalance = 0;
-$paymentid = 0;
+	$totalLessonsDuration = 0;
+	$tmp = $dataProvider->getModels();
+	foreach ($tmp as $item) {
+        $totalLessonsDuration += $item['duration'];
+    };
+	$lessonsBalance = 0;
+	$totalLessonsBalance = $totalLessonsQuantity - $totalLessonsDuration;
+	$paymentid = 0;
 	    
-	    
+	if($totalLessonsBalance <> 0) $footerOptions = ['class' => 'danger'];
+	else $footerOptions = [];   
+
     echo GridView::widget([
         'dataProvider' => $dataProvider,
 		'caption' => '<h3 style="display:inline">Занятия</h3>' . ' ' . 
@@ -196,15 +196,15 @@ $paymentid = 0;
         'layout' => "{items}",
 		'rowOptions' => function ($model, $key, $index, $grid) use (&$totalLessonsQuantity, $paidFee)  {
 	        if($totalLessonsQuantity < 0 or ($model->typeid == 2 and !$paidFee)) return ['class' => 'danger'];
-// 			Yii::warning($totalLessonsQuantity);
-// 			if() return ['class' => 'danger'];
-// 			else return ['class' => 'blue-color'];
 	     },
-        'beforeRow' => function ($model, $key, $index, $grid) use (&$paymentid)
+        'beforeRow' => function ($model, $key, $index, $grid) use (&$lessonsBalance, &$paymentid)
         {
             if($model->paymentid != $paymentid) {
-//                 $currentCompanyID = $model->man->companyid;
+				$paymentid = $model->paymentid;
+                $lessonsBalance = $model->payment->lessonsquantity;
                 return '<tr><td colspan=6><b>' . $model->payment->date . ' - ' . $model->payment->service->name . '</b></td></tr>';
+            } else {
+                $lessonsBalance -= $model->duration;
             }
         },
         'columns' => [
@@ -212,33 +212,17 @@ $paymentid = 0;
             'payment.service.name',
             [
                 'attribute' => 'баланс',
-                'value' => function($data) use (&$lessonsBalance, &$paymentid) {
-                    if($paymentid != $data->paymentid) {
-                        $paymentid = $data->paymentid;
-                        $lessonsBalance = $data->payment->lessonsquantity - $data->duration;
-                        return $data->payment->lessonsquantity;
-                        
-                    } else {
-                        $tmp = $lessonsBalance;
-                        $lessonsBalance -= $data->duration;
-                        return $tmp;
-                    
-                    }
-
+                'value' => function($data) use (&$lessonsBalance) {
+					return $lessonsBalance;
+					
                 },
+				'footer' => $totalLessonsBalance,
+				'footerOptions' => $footerOptions,
             ],
             [
             'attribute' => 'duration',
             'footer' => $totalLessonsDuration,
             ],
-//             [
-//                 'attribute' => 'остаток, ч',
-//                 'value' => function($data) use (&$totalLessonsQuantity) {
-// 					$totalLessonsQuantity = $totalLessonsQuantity - $data->duration;
-//                     return $totalLessonsQuantity;
-//                 },
-// 				'visible' => true,
-//             ],
 			[
 				'attribute' => 'type',
 				'format' => 'raw',
@@ -262,16 +246,14 @@ $paymentid = 0;
 // 			'instructor.name',
 	        [
 				'class' => 'yii\grid\ActionColumn',
-// 				'header' => 'Действия',
-				'headerOptions' => ['style' => 'color:#337ab7'],
-				'template' => '{view} {update} {delete}',
+				'template' => '{view} {update} {delete} {comment}',
+// 				},
 				'buttons' => [
 				'view' => function ($url, $model) {
 					return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', $url, [
 						'title' => Yii::t('app', 'посмотреть'),
 					]);
 				},
-
 				'update' => function ($url, $model) {
 					return Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
 						'title' => Yii::t('app', 'редактировать'),
@@ -282,7 +264,13 @@ $paymentid = 0;
 						'title' => Yii::t('app', 'удалить'),
 						'data-method' => 'post',
 					]);
-				}
+				},
+				'comment' => function ($url, $model) {
+					return Html::a('<span class="glyphicon glyphicon-comment"></span>', $url, [
+						'title' => Yii::t('app', $model->comment),
+						'hidden' => !isset($model->comment),
+					]);
+				},
 
 				],
 				'urlCreator' => function ($action, $model, $key, $index) {
@@ -297,6 +285,10 @@ $paymentid = 0;
 					}
 					if ($action === 'delete') {
 						$url ='index.php?r=lessons/delete&id=' . $model['id'];
+						return $url;
+					}
+                    if ($action === 'comment') {
+						$url ='index.php?r=lessons/view&id=' . $model['id'];
 						return $url;
 					}
 
